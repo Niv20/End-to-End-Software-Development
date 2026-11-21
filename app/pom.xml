@@ -36,6 +36,13 @@
             <artifactId>log4j-core</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- needed only to check the build (see exec-maven-plugin below), so it is not packed into the jar -->
+        <dependency>
+            <groupId>patmal.workshops</groupId>
+            <artifactId>workshop-tester</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -77,6 +84,33 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- runs the tester in the verify phase; a failing tester fails the build.
+                 Skip it with -Dexec.skip -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>run-tester</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <!-- the same Java that runs Maven -->
+                            <executable>${java.home}/bin/java</executable>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>-Dworkshop.log.level=error</argument>
+                                <argument>-classpath</argument>
+                                <classpath/>
+                                <argument>patmal.workshops.main.Main</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

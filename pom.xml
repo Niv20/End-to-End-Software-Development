@@ -68,7 +68,6 @@
                 <groupId>patmal.workshops</groupId>
                 <artifactId>workshop-tester</artifactId>
                 <version>${workshop.tester.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- third-party libraries -->
