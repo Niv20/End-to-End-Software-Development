@@ -50,11 +50,7 @@ public class TeamImpl implements Team {
         students.add(student);
     }
 
-    /**
-     * Two teams are equal if they have the same id. The list of students is not part of the
-     * comparison: it can change, and each student points back to its team, so comparing the
-     * students would compare the team again and never end.
-     */
+    // Only the id is compared: the students can change, and each student points back to its team
     @Override
     public boolean equals(Object other) {
         if (this == other) {

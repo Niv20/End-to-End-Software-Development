@@ -3,7 +3,7 @@ package patmal.workshops.student.impl.logic;
 import org.apache.commons.validator.routines.EmailValidator;
 
 /**
- * Small input checks that are shared by the managers.
+ * Input checks that are used by more than one class.
  */
 final class Checks {
 

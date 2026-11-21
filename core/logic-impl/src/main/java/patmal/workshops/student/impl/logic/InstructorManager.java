@@ -32,8 +32,7 @@ class InstructorManager {
         return new ArrayList<>(instructors.values());
     }
 
-    // The caller gives us an Instructor object. We find our own object with the same id,
-    // so that we can update it. An instructor that is not in the system is an invalid argument.
+    // Finds our own object with the same id, so that we can update it
     InstructorImpl find(Instructor instructor) {
         if (instructor == null) {
             throw new IllegalArgumentException("The instructor must not be null");

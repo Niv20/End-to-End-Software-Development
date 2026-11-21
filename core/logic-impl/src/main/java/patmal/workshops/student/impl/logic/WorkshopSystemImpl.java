@@ -18,24 +18,14 @@ import patmal.workshops.student.impl.model.InstructorImpl;
 import patmal.workshops.student.impl.model.WorkshopImpl;
 
 /**
- * The in-memory implementation of WorkshopSystem. The work is done by one manager per area
- * (instructors, students, workshops, teams); this class only checks the rules that involve
- * more than one area and delegates to the managers.
+ * The in-memory implementation of WorkshopSystem. Each area (instructors, students, workshops,
+ * teams) has its own manager; this class checks the rules that involve more than one area,
+ * delegates to the managers and logs every operation.
  * <p>
- * Invalid operations throw IllegalArgumentException. Everything is checked before anything
- * is changed, so a rejected operation leaves the system exactly as it was and does not use up an id.
- * <p>
- * These must be unique in the system:
- * <ul>
- *   <li>A person id. One id belongs to one person: a student or an instructor, not both.</li>
- *   <li>A person e-mail.</li>
- *   <li>A workshop name.</li>
- *   <li>A team name.</li>
- * </ul>
- * Names and e-mails are compared ignoring upper/lower case and spaces at the start and the end.
- * An e-mail must also be a valid address (checked with commons-validator).
- * <p>
- * A lookup by an id that does not exist returns null (or an empty list).
+ * An invalid operation throws IllegalArgumentException and leaves the system unchanged.
+ * Person ids and e-mails, workshop names and team names are unique (an id belongs to a student
+ * or to an instructor, not to both). Names and e-mails are compared ignoring case and the
+ * spaces at the start and the end.
  */
 public class WorkshopSystemImpl implements WorkshopSystem {
 
@@ -45,10 +35,8 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private final StudentManager studentManager = new StudentManager();
     private final WorkshopManager workshopManager = new WorkshopManager();
     private final TeamManager teamManager = new TeamManager(studentManager);
-    private final JsonExporter jsonExporter = new JsonExporter();
+    private final JsonExporter jsonExporter = new JsonExporter(instructorManager, studentManager, teamManager);
     private final CsvStudentImporter csvImporter = new CsvStudentImporter();
-
-    // ---------- Creating things ----------
 
     @Override
     public Instructor createInstructor(String id, String name, String email) {
@@ -115,8 +103,6 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         }
     }
 
-    // ---------- Querying ----------
-
     @Override
     public List<Instructor> getInstructors() {
         return instructorManager.getAll();
@@ -180,42 +166,20 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         return teamManager.getStudentsOfWorkshop(workshopId);
     }
 
-    // ---------- Export ----------
-
     @Override
     public void exportInstructorsDataToJson(File targetFileName) {
-        try {
-            jsonExporter.exportInstructors(getInstructors(), getTeams(), targetFileName);
-            log.info("Exported the instructors to {}", targetFileName);
-        } catch (IllegalArgumentException | UncheckedIOException e) {
-            log.warn("The instructors were not exported: {}", e.getMessage());
-            throw e;
-        }
+        export("instructors", targetFileName, () -> jsonExporter.exportInstructors(targetFileName));
     }
 
     @Override
     public void exportStudentsDataToJson(File targetFileName) {
-        try {
-            jsonExporter.exportStudents(getStudents(), getTeams(), targetFileName);
-            log.info("Exported the students to {}", targetFileName);
-        } catch (IllegalArgumentException | UncheckedIOException e) {
-            log.warn("The students were not exported: {}", e.getMessage());
-            throw e;
-        }
+        export("students", targetFileName, () -> jsonExporter.exportStudents(targetFileName));
     }
 
     @Override
     public void exportTeamsDataToJson(File targetFileName) {
-        try {
-            jsonExporter.exportTeams(getTeams(), targetFileName);
-            log.info("Exported the teams to {}", targetFileName);
-        } catch (IllegalArgumentException | UncheckedIOException e) {
-            log.warn("The teams were not exported: {}", e.getMessage());
-            throw e;
-        }
+        export("teams", targetFileName, () -> jsonExporter.exportTeams(targetFileName));
     }
-
-    // ---------- Import ----------
 
     @Override
     public List<Student> importStudentDataFromFile(File source) {
@@ -229,10 +193,16 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         }
     }
 
-    // ---------- Helpers ----------
+    private void export(String what, File target, Runnable writeFile) {
+        try {
+            writeFile.run();
+            log.info("Exported the {} to {}", what, target);
+        } catch (IllegalArgumentException | UncheckedIOException e) {
+            log.warn("The {} were not exported: {}", what, e.getMessage());
+            throw e;
+        }
+    }
 
-    // A person is identified by the id, so one id belongs to one person only - a student or an instructor.
-    // Two persons cannot have the same e-mail either.
     private void checkNewPerson(String id, String name, String email) {
         Checks.requireText(id, "id");
         Checks.requireText(name, "name");

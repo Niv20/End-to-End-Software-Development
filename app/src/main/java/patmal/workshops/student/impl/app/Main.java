@@ -43,7 +43,7 @@ public class Main {
             List<Student> students = args.length == 1
                     ? system.importStudentDataFromFile(new File(args[0]))
                     : importBundledStudents(system);
-            List<Workshop> workshops = createWorkshops(system);
+            List<Workshop> workshops = createInstructorsAndWorkshops(system);
             createTeams(system, workshops, students);
             exportAll(system);
         } catch (RuntimeException e) {
@@ -71,7 +71,7 @@ public class Main {
         }
     }
 
-    private static List<Workshop> createWorkshops(WorkshopSystem system) {
+    private static List<Workshop> createInstructorsAndWorkshops(WorkshopSystem system) {
         Instructor dana = system.createInstructor("i1", "Dana Levi", "dana.levi@univ.edu");
         Instructor yossi = system.createInstructor("i2", "Yossi Mizrahi", "yossi.mizrahi@univ.edu");
 
@@ -116,6 +116,6 @@ public class Main {
 
         log.info("{} instructors, {} workshops, {} students ({} free) and {} teams were written to {}",
                 system.getInstructors().size(), system.getWorkshops().size(), system.getStudents().size(),
-                system.getFreeStudents().size(), system.getTeams().size(), instructors.getAbsoluteFile().getParent());
+                system.getFreeStudents().size(), system.getTeams().size(), System.getProperty("user.dir"));
     }
 }

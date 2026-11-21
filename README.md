@@ -110,4 +110,3 @@ Output of `mvn dependency:tree` for logic-impl:
 - jackson-core (the streaming parser/generator) and jackson-annotations were brought by
   jackson-databind.
 - commons-io and commons-codec were brought by commons-csv.
-- In the app module, log4j-api also comes with log4j-core.

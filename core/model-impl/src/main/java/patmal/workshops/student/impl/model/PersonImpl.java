@@ -6,7 +6,6 @@ import patmal.workshops.api.model.Person;
 
 /**
  * The data that every person in the system has: id, name and e-mail.
- * InstructorImpl and StudentImpl extend this class.
  */
 public abstract class PersonImpl implements Person {
 
@@ -35,11 +34,7 @@ public abstract class PersonImpl implements Person {
         return email;
     }
 
-    /**
-     * Two persons are equal if they are of the same kind (both students or both instructors)
-     * and have the same id. The id is what identifies a person in the system.
-     * A student and an instructor with the same id are not equal.
-     */
+    // Two persons are equal if they are of the same kind (both students or both instructors) and have the same id
     @Override
     public boolean equals(Object other) {
         if (this == other) {

@@ -68,7 +68,7 @@
                                         <Multi-Release>true</Multi-Release>
                                     </manifestEntries>
                                 </transformer>
-                                <!-- merge the license and notice files of the libraries into one -->
+                                <!-- every library has its own LICENSE and NOTICE file: keep one merged NOTICE instead -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
                             </transformers>
@@ -106,6 +106,7 @@
                             <executable>${java.home}/bin/java</executable>
                             <classpathScope>test</classpathScope>
                             <arguments>
+                                <!-- the tester makes many invalid calls on purpose, so only errors are logged -->
                                 <argument>-Dworkshop.log.level=error</argument>
                                 <argument>-classpath</argument>
                                 <classpath/>

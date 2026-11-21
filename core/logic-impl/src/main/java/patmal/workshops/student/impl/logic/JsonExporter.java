@@ -29,76 +29,86 @@ class JsonExporter {
 
     private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
-    void exportInstructors(List<Instructor> instructors, List<Team> teams, File target) {
+    private final InstructorManager instructorManager;
+    private final StudentManager studentManager;
+    private final TeamManager teamManager;
+
+    JsonExporter(InstructorManager instructorManager, StudentManager studentManager, TeamManager teamManager) {
+        this.instructorManager = instructorManager;
+        this.studentManager = studentManager;
+        this.teamManager = teamManager;
+    }
+
+    void exportInstructors(File target) {
         List<InstructorJson> result = new ArrayList<>();
-        for (Instructor instructor : instructors) {
+        for (Instructor instructor : instructorManager.getAll()) {
             List<WorkshopWithTeamsJson> workshops = new ArrayList<>();
             for (Workshop workshop : instructor.getWorkshops()) {
                 workshops.add(new WorkshopWithTeamsJson(workshop.getId(), workshop.getName(),
-                        workshop.getDescription(), teamsOf(workshop, teams)));
+                        workshop.getDescription(), teamsJson(workshop)));
             }
             result.add(new InstructorJson(instructor.getId(), instructor.getName(), instructor.getEmail(), workshops));
         }
         write(result, target);
     }
 
-    void exportStudents(List<Student> students, List<Team> teams, File target) {
+    void exportStudents(File target) {
         Map<String, Team> teamOfStudent = new HashMap<>();
-        for (Team team : teams) {
+        for (Team team : teamManager.getAll()) {
             for (Student student : team.getStudents()) {
                 teamOfStudent.put(student.getId(), team);
             }
         }
 
         List<StudentJson> result = new ArrayList<>();
-        for (Student student : students) {
+        for (Student student : studentManager.getAll()) {
             Team team = teamOfStudent.get(student.getId());
-            StudentTeamJson teamJson = null;
-            if (team != null) {
-                List<String> studentIds = new ArrayList<>();
-                for (Student member : team.getStudents()) {
-                    studentIds.add(member.getId());
-                }
-                teamJson = new StudentTeamJson(team.getId(), team.getName(), studentIds, toJson(team.getWorkshop()));
-            }
+            StudentTeamJson teamJson = team == null ? null
+                    : new StudentTeamJson(team.getId(), team.getName(), studentIds(team), workshopJson(team.getWorkshop()));
             result.add(new StudentJson(student.getId(), student.getName(), student.getEmail(), teamJson));
         }
         write(result, target);
     }
 
-    void exportTeams(List<Team> teams, File target) {
+    void exportTeams(File target) {
         List<TeamJson> result = new ArrayList<>();
-        for (Team team : teams) {
-            result.add(new TeamJson(team.getId(), team.getName(), toJson(team.getStudents()), toJson(team.getWorkshop())));
+        for (Team team : teamManager.getAll()) {
+            result.add(new TeamJson(team.getId(), team.getName(), studentsJson(team), workshopJson(team.getWorkshop())));
         }
         write(result, target);
     }
 
-    private static List<TeamWithStudentsJson> teamsOf(Workshop workshop, List<Team> teams) {
+    private List<TeamWithStudentsJson> teamsJson(Workshop workshop) {
         List<TeamWithStudentsJson> result = new ArrayList<>();
-        for (Team team : teams) {
-            if (team.getWorkshop().getId().equals(workshop.getId())) {
-                result.add(new TeamWithStudentsJson(team.getId(), team.getName(), toJson(team.getStudents())));
-            }
+        for (Team team : teamManager.getTeamsOfWorkshop(workshop.getId())) {
+            result.add(new TeamWithStudentsJson(team.getId(), team.getName(), studentsJson(team)));
         }
         return result;
     }
 
-    private static WorkshopJson toJson(Workshop workshop) {
+    private static WorkshopJson workshopJson(Workshop workshop) {
         Instructor instructor = workshop.getInstructor();
-        PersonJson instructorJson = instructor == null ? null : toJson(instructor);
+        PersonJson instructorJson = instructor == null ? null : personJson(instructor);
         return new WorkshopJson(workshop.getId(), workshop.getName(), workshop.getDescription(), instructorJson);
     }
 
-    private static List<PersonJson> toJson(List<Student> students) {
+    private static List<PersonJson> studentsJson(Team team) {
         List<PersonJson> result = new ArrayList<>();
-        for (Student student : students) {
-            result.add(toJson(student));
+        for (Student student : team.getStudents()) {
+            result.add(personJson(student));
         }
         return result;
     }
 
-    private static PersonJson toJson(Person person) {
+    private static List<String> studentIds(Team team) {
+        List<String> result = new ArrayList<>();
+        for (Student student : team.getStudents()) {
+            result.add(student.getId());
+        }
+        return result;
+    }
+
+    private static PersonJson personJson(Person person) {
         return new PersonJson(person.getId(), person.getName(), person.getEmail());
     }
 

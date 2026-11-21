@@ -26,6 +26,7 @@ import patmal.workshops.api.model.Student;
 class CsvStudentImporter {
 
     private static final List<String> HEADER = List.of("id", "name", "email");
+    private static final String HEADER_LINE = String.join(",", HEADER);
 
     // Empty lines are skipped and values may be quoted (the defaults of CSVFormat.DEFAULT)
     private static final CSVFormat FORMAT = CSVFormat.DEFAULT.builder()
@@ -54,11 +55,11 @@ class CsvStudentImporter {
     private List<Student> readStudents(CSVParser parser, WorkshopSystem system) {
         Iterator<CSVRecord> lines = parser.iterator();
         if (!lines.hasNext()) {
-            throw new IllegalArgumentException("The file is empty, the header line " + String.join(",", HEADER) + " is missing");
+            throw new IllegalArgumentException("The file is empty, the header line " + HEADER_LINE + " is missing");
         }
         List<String> header = lines.next().toList();
         if (!header.equals(HEADER)) {
-            throw new IllegalArgumentException("The header line must be " + String.join(",", HEADER)
+            throw new IllegalArgumentException("The header line must be " + HEADER_LINE
                     + " but was " + String.join(",", header));
         }
 

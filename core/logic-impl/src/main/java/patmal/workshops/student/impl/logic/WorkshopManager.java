@@ -37,8 +37,7 @@ class WorkshopManager {
         return new ArrayList<>(workshops.values());
     }
 
-    // The caller gives us a Workshop object. We find our own object with the same id,
-    // so that we can update it. A workshop that is not in the system is an invalid argument.
+    // Finds our own object with the same id, so that we can update it
     WorkshopImpl find(Workshop workshop) {
         if (workshop == null) {
             throw new IllegalArgumentException("The workshop must not be null");
