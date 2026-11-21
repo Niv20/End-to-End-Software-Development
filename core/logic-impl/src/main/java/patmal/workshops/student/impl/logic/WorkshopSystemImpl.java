@@ -1,5 +1,6 @@
-package patmal.workshops.logic;
+package patmal.workshops.student.impl.logic;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,10 +12,10 @@ import patmal.workshops.api.model.Person;
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
 import patmal.workshops.api.model.Workshop;
-import patmal.workshops.model.InstructorImpl;
-import patmal.workshops.model.StudentImpl;
-import patmal.workshops.model.TeamImpl;
-import patmal.workshops.model.WorkshopImpl;
+import patmal.workshops.student.impl.model.InstructorImpl;
+import patmal.workshops.student.impl.model.StudentImpl;
+import patmal.workshops.student.impl.model.TeamImpl;
+import patmal.workshops.student.impl.model.WorkshopImpl;
 
 /**
  * The in-memory implementation of WorkshopSystem. All the objects are kept in maps, by their id.
@@ -221,6 +222,23 @@ public class WorkshopSystemImpl implements WorkshopSystem {
             }
         }
         return result;
+    }
+
+    // ---------- Export ----------
+
+    @Override
+    public void exportInstructorsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void exportStudentsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void exportTeamsDataToJson(File targetFileName) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     // ---------- Helpers ----------

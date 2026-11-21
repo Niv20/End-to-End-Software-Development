@@ -1,4 +1,4 @@
-package patmal.workshops.model;
+package patmal.workshops.student.impl.model;
 
 import java.util.ArrayList;
 import java.util.List;
