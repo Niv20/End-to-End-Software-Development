@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import patmal.workshops.api.logic.WorkshopSystem;
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Person;
@@ -34,6 +37,8 @@ import patmal.workshops.student.impl.model.WorkshopImpl;
  */
 public class WorkshopSystemImpl implements WorkshopSystem {
 
+    private static final Logger log = LogManager.getLogger(WorkshopSystemImpl.class);
+
     private final InstructorManager instructorManager = new InstructorManager();
     private final StudentManager studentManager = new StudentManager();
     private final WorkshopManager workshopManager = new WorkshopManager();
@@ -43,32 +48,67 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Instructor createInstructor(String id, String name, String email) {
-        checkNewPerson(id, name, email);
-        return instructorManager.create(id, name, email);
+        try {
+            checkNewPerson(id, name, email);
+            Instructor instructor = instructorManager.create(id, name, email);
+            log.info("Created instructor {} ({})", id, name);
+            return instructor;
+        } catch (IllegalArgumentException e) {
+            log.warn("Instructor {} was not created: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public Student createStudent(String id, String name, String email) {
-        checkNewPerson(id, name, email);
-        return studentManager.create(id, name, email);
+        try {
+            checkNewPerson(id, name, email);
+            Student student = studentManager.create(id, name, email);
+            log.info("Created student {} ({})", id, name);
+            return student;
+        } catch (IllegalArgumentException e) {
+            log.warn("Student {} was not created: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public Workshop createWorkshop(String name, String description) {
-        return workshopManager.create(name, description);
+        try {
+            Workshop workshop = workshopManager.create(name, description);
+            log.info("Created workshop {} ({})", workshop.getId(), name);
+            return workshop;
+        } catch (IllegalArgumentException e) {
+            log.warn("Workshop {} was not created: {}", name, e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public void associateWorkshopWithInstructor(Instructor instructor, Workshop workshop) {
-        InstructorImpl newInstructor = instructorManager.find(instructor);
-        WorkshopImpl workshopToAssociate = workshopManager.find(workshop);
-        instructorManager.assignWorkshop(newInstructor, workshopToAssociate);
+        try {
+            InstructorImpl newInstructor = instructorManager.find(instructor);
+            WorkshopImpl workshopToAssociate = workshopManager.find(workshop);
+            instructorManager.assignWorkshop(newInstructor, workshopToAssociate);
+            log.info("Workshop {} is taught by instructor {}", workshopToAssociate.getId(), newInstructor.getId());
+        } catch (IllegalArgumentException e) {
+            log.warn("Workshop was not associated with an instructor: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public Team createTeam(String name, Workshop workshop, List<String> members) {
-        WorkshopImpl teamWorkshop = workshopManager.find(workshop);
-        return teamManager.create(name, teamWorkshop, members);
+        try {
+            WorkshopImpl teamWorkshop = workshopManager.find(workshop);
+            Team team = teamManager.create(name, teamWorkshop, members);
+            log.info("Created team {} ({}) in workshop {} with students {}",
+                    team.getId(), name, teamWorkshop.getId(), members);
+            return team;
+        } catch (IllegalArgumentException e) {
+            log.warn("Team {} was not created: {}", name, e.getMessage());
+            throw e;
+        }
     }
 
     // ---------- Querying ----------

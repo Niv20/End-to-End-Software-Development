@@ -25,5 +25,16 @@
             <groupId>patmal.workshops</groupId>
             <artifactId>logic</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <!-- the Log4j implementation is needed only when the application runs -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 </project>
