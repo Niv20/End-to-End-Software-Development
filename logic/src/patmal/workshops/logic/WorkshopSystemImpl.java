@@ -7,6 +7,7 @@ import java.util.Map;
 
 import patmal.workshops.api.logic.WorkshopSystem;
 import patmal.workshops.api.model.Instructor;
+import patmal.workshops.api.model.Person;
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
 import patmal.workshops.api.model.Workshop;
@@ -20,6 +21,20 @@ import patmal.workshops.model.WorkshopImpl;
  * <p>
  * Invalid operations throw IllegalArgumentException. Everything is checked before anything
  * is changed, so a rejected operation leaves the system exactly as it was and does not use up an id.
+ * <p>
+ * These must be unique in the system. The instructions do not say so, but with duplicates
+ * there would be no way to tell two things apart:
+ * <ul>
+ *   <li>A person id. One id belongs to one person: a student or an instructor, not both.</li>
+ *   <li>A person e-mail.</li>
+ *   <li>A workshop name.</li>
+ *   <li>A team name.</li>
+ * </ul>
+ * Person names do not have to be unique - two different people can have the same name.
+ * Names and e-mails are compared ignoring upper/lower case and spaces at the start and the end,
+ * so "Java Workshop" and " java workshop" are the same name.
+ * <p>
+ * Ids, names and e-mails must not be null or empty, and a team must have at least one member.
  * <p>
  * Unknown keys: a lookup by an id that does not exist does not throw an exception.
  * getInstructor, getStudent, getWorkshop and getTeam return null,
@@ -41,9 +56,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Instructor createInstructor(String id, String name, String email) {
-        if (instructors.containsKey(id)) {
-            throw new IllegalArgumentException("An instructor with id " + id + " already exists");
-        }
+        checkNewPerson(id, name, email);
         InstructorImpl instructor = new InstructorImpl(id, name, email);
         instructors.put(id, instructor);
         return instructor;
@@ -51,9 +64,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Student createStudent(String id, String name, String email) {
-        if (students.containsKey(id)) {
-            throw new IllegalArgumentException("A student with id " + id + " already exists");
-        }
+        checkNewPerson(id, name, email);
         StudentImpl student = new StudentImpl(id, name, email);
         students.put(id, student);
         return student;
@@ -61,6 +72,12 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Workshop createWorkshop(String name, String description) {
+        requireText(name, "workshop name");
+        for (WorkshopImpl existing : workshops.values()) {
+            if (sameText(existing.getName(), name)) {
+                throw new IllegalArgumentException("A workshop named " + existing.getName() + " already exists");
+            }
+        }
         WorkshopImpl workshop = new WorkshopImpl(nextWorkshopId, name, description);
         workshops.put(workshop.getId(), workshop);
         nextWorkshopId++;
@@ -72,8 +89,14 @@ public class WorkshopSystemImpl implements WorkshopSystem {
         InstructorImpl newInstructor = findInstructor(instructor);
         WorkshopImpl workshopToAssociate = findWorkshop(workshop);
 
-        // A workshop has only one instructor, so remove it from its previous instructor (if it had one)
         Instructor previousInstructor = workshopToAssociate.getInstructor();
+        // Already associated with this instructor - nothing to change
+        // (otherwise the workshop would move to the end of the instructor's list)
+        if (newInstructor.equals(previousInstructor)) {
+            return;
+        }
+
+        // A workshop has only one instructor, so remove it from its previous instructor (if it had one)
         if (previousInstructor != null) {
             instructors.get(previousInstructor.getId()).removeWorkshop(workshopToAssociate);
         }
@@ -85,7 +108,16 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public Team createTeam(String name, Workshop workshop, List<String> members) {
+        requireText(name, "team name");
+        for (TeamImpl existing : teams.values()) {
+            if (sameText(existing.getName(), name)) {
+                throw new IllegalArgumentException("A team named " + existing.getName() + " already exists");
+            }
+        }
         WorkshopImpl teamWorkshop = findWorkshop(workshop);
+        if (members == null || members.isEmpty()) {
+            throw new IllegalArgumentException("A team must have at least one member");
+        }
 
         // First check all the members. Nothing is changed until we know that the whole team is valid.
         List<StudentImpl> teamStudents = new ArrayList<>();
@@ -197,6 +229,9 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     // so that we can update them. An object that is not in the system is an invalid argument.
 
     private InstructorImpl findInstructor(Instructor instructor) {
+        if (instructor == null) {
+            throw new IllegalArgumentException("The instructor must not be null");
+        }
         InstructorImpl found = instructors.get(instructor.getId());
         if (found == null) {
             throw new IllegalArgumentException("There is no instructor with id " + instructor.getId());
@@ -205,10 +240,45 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     }
 
     private WorkshopImpl findWorkshop(Workshop workshop) {
+        if (workshop == null) {
+            throw new IllegalArgumentException("The workshop must not be null");
+        }
         WorkshopImpl found = workshops.get(workshop.getId());
         if (found == null) {
             throw new IllegalArgumentException("There is no workshop with id " + workshop.getId());
         }
         return found;
+    }
+
+    // A person is identified by the id, so one id belongs to one person only - a student or an instructor.
+    // Two persons cannot have the same e-mail either.
+    private void checkNewPerson(String id, String name, String email) {
+        requireText(id, "id");
+        requireText(name, "name");
+        requireText(email, "e-mail");
+        if (instructors.containsKey(id)) {
+            throw new IllegalArgumentException("An instructor with id " + id + " already exists");
+        }
+        if (students.containsKey(id)) {
+            throw new IllegalArgumentException("A student with id " + id + " already exists");
+        }
+        List<Person> persons = new ArrayList<>(instructors.values());
+        persons.addAll(students.values());
+        for (Person person : persons) {
+            if (sameText(person.getEmail(), email)) {
+                throw new IllegalArgumentException("The e-mail " + email + " is already used by " + person.getId());
+            }
+        }
+    }
+
+    private static void requireText(String value, String what) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("The " + what + " must not be empty");
+        }
+    }
+
+    // Names and e-mails: upper/lower case and spaces at the start and the end do not matter
+    private static boolean sameText(String first, String second) {
+        return first.strip().equalsIgnoreCase(second.strip());
     }
 }
