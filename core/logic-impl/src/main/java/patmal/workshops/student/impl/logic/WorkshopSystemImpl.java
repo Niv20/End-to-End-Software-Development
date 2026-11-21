@@ -1,6 +1,7 @@
 package patmal.workshops.student.impl.logic;
 
 import java.io.File;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private final StudentManager studentManager = new StudentManager();
     private final WorkshopManager workshopManager = new WorkshopManager();
     private final TeamManager teamManager = new TeamManager(studentManager);
+    private final JsonExporter jsonExporter = new JsonExporter();
 
     // ---------- Creating things ----------
 
@@ -181,17 +183,35 @@ public class WorkshopSystemImpl implements WorkshopSystem {
 
     @Override
     public void exportInstructorsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        try {
+            jsonExporter.exportInstructors(getInstructors(), getTeams(), targetFileName);
+            log.info("Exported the instructors to {}", targetFileName);
+        } catch (IllegalArgumentException | UncheckedIOException e) {
+            log.warn("The instructors were not exported: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public void exportStudentsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        try {
+            jsonExporter.exportStudents(getStudents(), getTeams(), targetFileName);
+            log.info("Exported the students to {}", targetFileName);
+        } catch (IllegalArgumentException | UncheckedIOException e) {
+            log.warn("The students were not exported: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public void exportTeamsDataToJson(File targetFileName) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        try {
+            jsonExporter.exportTeams(getTeams(), targetFileName);
+            log.info("Exported the teams to {}", targetFileName);
+        } catch (IllegalArgumentException | UncheckedIOException e) {
+            log.warn("The teams were not exported: {}", e.getMessage());
+            throw e;
+        }
     }
 
     // ---------- Helpers ----------
