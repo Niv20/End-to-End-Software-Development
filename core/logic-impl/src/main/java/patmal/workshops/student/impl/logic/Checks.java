@@ -1,5 +1,7 @@
 package patmal.workshops.student.impl.logic;
 
+import org.apache.commons.validator.routines.EmailValidator;
+
 /**
  * Small input checks that are shared by the managers.
  */
@@ -11,6 +13,12 @@ final class Checks {
     static void requireText(String value, String what) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("The " + what + " must not be empty");
+        }
+    }
+
+    static void requireValidEmail(String email) {
+        if (!EmailValidator.getInstance().isValid(email)) {
+            throw new IllegalArgumentException("The e-mail " + email + " is not a valid address");
         }
     }
 

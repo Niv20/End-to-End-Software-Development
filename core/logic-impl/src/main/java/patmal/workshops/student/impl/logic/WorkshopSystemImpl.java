@@ -32,6 +32,7 @@ import patmal.workshops.student.impl.model.WorkshopImpl;
  *   <li>A team name.</li>
  * </ul>
  * Names and e-mails are compared ignoring upper/lower case and spaces at the start and the end.
+ * An e-mail must also be a valid address (checked with commons-validator).
  * <p>
  * A lookup by an id that does not exist returns null (or an empty list).
  */
@@ -200,7 +201,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private void checkNewPerson(String id, String name, String email) {
         Checks.requireText(id, "id");
         Checks.requireText(name, "name");
-        Checks.requireText(email, "e-mail");
+        Checks.requireValidEmail(email);
         if (instructorManager.exists(id)) {
             throw new IllegalArgumentException("An instructor with id " + id + " already exists");
         }
