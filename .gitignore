@@ -1,2 +1,10 @@
+target/
 out/
+.idea/
+*.iml
 .DS_Store
+
+# files written by the application
+instructors.json
+students.json
+teams.json
