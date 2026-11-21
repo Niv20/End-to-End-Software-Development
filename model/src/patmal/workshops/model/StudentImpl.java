@@ -53,7 +53,7 @@ public class StudentImpl extends PersonImpl implements Student {
         }
         for (Student member : team.getStudents()) {
             // Skip this student - only the other members of the team are team mates
-            if (member != this) {
+            if (!member.equals(this)) {
                 teamMates.add(member);
             }
         }

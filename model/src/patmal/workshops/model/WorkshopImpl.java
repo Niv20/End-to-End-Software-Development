@@ -1,5 +1,7 @@
 package patmal.workshops.model;
 
+import java.util.Objects;
+
 import patmal.workshops.api.model.Instructor;
 import patmal.workshops.api.model.Workshop;
 
@@ -42,5 +44,26 @@ public class WorkshopImpl implements Workshop {
 
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
+    }
+
+    /**
+     * Two workshops are equal if they have the same id. The instructor is not part of the
+     * comparison, because it can change after the workshop is created.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        WorkshopImpl otherWorkshop = (WorkshopImpl) other;
+        return Objects.equals(id, otherWorkshop.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

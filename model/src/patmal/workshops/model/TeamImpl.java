@@ -2,6 +2,7 @@ package patmal.workshops.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import patmal.workshops.api.model.Student;
 import patmal.workshops.api.model.Team;
@@ -47,5 +48,27 @@ public class TeamImpl implements Team {
 
     public void addStudent(Student student) {
         students.add(student);
+    }
+
+    /**
+     * Two teams are equal if they have the same id. The list of students is not part of the
+     * comparison: it can change, and each student points back to its team, so comparing the
+     * students would compare the team again and never end.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        TeamImpl otherTeam = (TeamImpl) other;
+        return Objects.equals(id, otherTeam.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

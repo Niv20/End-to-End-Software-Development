@@ -1,5 +1,7 @@
 package patmal.workshops.model;
 
+import java.util.Objects;
+
 import patmal.workshops.api.model.Person;
 
 /**
@@ -31,5 +33,27 @@ public abstract class PersonImpl implements Person {
     @Override
     public String getEmail() {
         return email;
+    }
+
+    /**
+     * Two persons are equal if they are of the same kind (both students or both instructors)
+     * and have the same id. The id is what identifies a person in the system.
+     * A student and an instructor with the same id are not equal.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        PersonImpl otherPerson = (PersonImpl) other;
+        return Objects.equals(id, otherPerson.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
