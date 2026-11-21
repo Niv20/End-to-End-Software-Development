@@ -46,6 +46,7 @@ public class WorkshopSystemImpl implements WorkshopSystem {
     private final WorkshopManager workshopManager = new WorkshopManager();
     private final TeamManager teamManager = new TeamManager(studentManager);
     private final JsonExporter jsonExporter = new JsonExporter();
+    private final CsvStudentImporter csvImporter = new CsvStudentImporter();
 
     // ---------- Creating things ----------
 
@@ -210,6 +211,20 @@ public class WorkshopSystemImpl implements WorkshopSystem {
             log.info("Exported the teams to {}", targetFileName);
         } catch (IllegalArgumentException | UncheckedIOException e) {
             log.warn("The teams were not exported: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    // ---------- Import ----------
+
+    @Override
+    public List<Student> importStudentDataFromFile(File source) {
+        try {
+            List<Student> students = csvImporter.importStudents(source, this);
+            log.info("Imported {} students from {}", students.size(), source);
+            return students;
+        } catch (IllegalArgumentException | UncheckedIOException e) {
+            log.warn("The import of students from {} stopped: {}", source, e.getMessage());
             throw e;
         }
     }
